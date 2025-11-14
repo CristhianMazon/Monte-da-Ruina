@@ -7,16 +7,14 @@ const INITIAL_BALANCE = 100.0;
 export const BET_AMOUNT = 10;
 
 // Definição das Cartas de Risco (Probabilidade enviesada: House Edge)
+// Usando as probabilidades de 40%/20%/5%
 export const RISK_CARDS = [
     // Bronze: Risco Baixo (Multiplicador baixo, mas EV negativo)
-    // Chance WIN: 40%
-    { id: '1', name: 'Bronze', multiplier: 1.5, winChance: 0.40, color: '#cd7f32', theme: 'Risco Baixo' },
+    { id: '1', name: 'Bronze', multiplier: 1.5, winChance: 0.40, color: '#cd7f32', theme: 'Risco Baixo' }, 
     // Prata: Risco Médio
-    // Chance WIN: 20%
-    { id: '2', name: 'Prata', multiplier: 3, winChance: 0.20, color: '#c0c0c0', theme: 'Risco Médio' },
+    { id: '2', name: 'Prata', multiplier: 3, winChance: 0.20, color: '#c0c0c0', theme: 'Risco Médio' }, 
     // Ouro: Risco Alto (Ganância, Multiplicador alto, EV mais negativo)
-    // Chance WIN: 5%
-    { id: '3', name: 'Ouro', multiplier: 10, winChance: 0.05, color: '#FFD700', theme: 'Risco Alto' },
+    { id: '3', name: 'Ouro', multiplier: 10, winChance: 0.05, color: '#FFD700', theme: 'Risco Alto' }, 
 ];
 
 // Posições visuais do Monte
@@ -84,7 +82,7 @@ export const GameProvider = ({ children }) => {
         setWinStreak(0);
     };
 
-    // NOVO: Função para adicionar saldo (simulação de depósito)
+    // Função para adicionar saldo (simulação de depósito)
     const deposit = useCallback((amount) => {
         // Garante que apenas o valor inteiro seja depositado
         const integerAmount = Math.floor(amount); 

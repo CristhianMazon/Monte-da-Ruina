@@ -7,7 +7,7 @@ import { useGame, RISK_CARDS, VISUAL_POSITIONS, BET_AMOUNT } from "../context/Ga
 
 // Componentes simples (simulação de Shadcn/ui) - ESTILO WESTERN
 const Card = ({ children, className = "" }) => (
-    // NOVO: Altera a cor da borda principal para o Ouro Antigo (amber-400)
+    // Borda principal alterada para Ouro Antigo (amber-400)
     <div className={`bg-stone-800 text-gray-100 rounded-lg p-6 shadow-2xl border-4 border-amber-400 ${className}`}>{children}</div>
 );
 const CardContent = ({ children }) => <>{children}</>;
@@ -59,7 +59,7 @@ const MonteDaRuina = () => {
     const [currentBetAmount, setCurrentBetAmount] = useState(MIN_BET); // Inicia com o mínimo
     const [showGreedPrompt, setShowGreedPrompt] = useState(false);
     
-    // NOVO: Estado para o valor de depósito (valor inicial de 50 para conveniência)
+    // Estado para o valor de depósito (valor inicial de 50 para conveniência)
     const [depositAmount, setDepositAmount] = useState(50); 
 
 
@@ -76,7 +76,7 @@ const MonteDaRuina = () => {
         }
     };
     
-    // NOVO: Lógica para executar o depósito
+    // Lógica para executar o depósito
     const handleDeposit = () => {
         if (depositAmount <= 0) {
             setMessage("O valor de depósito deve ser positivo e inteiro.");
@@ -205,8 +205,8 @@ const MonteDaRuina = () => {
 
     // Renderização do Painel de Jogo (Lobby/GameScreen)
     return (
-        // CONTÊINER PRINCIPAL: w-full e sem padding lateral fixo para não forçar o overflow
-        <div className="min-h-screen bg-amber-950/70 text-gray-100 flex flex-col items-center justify-start w-full">
+        // CONTÊINER PRINCIPAL: REMOVIDA A CLASSE DE FUNDO (bg-amber-950/70)
+        <div className="min-h-screen text-gray-100 flex flex-col items-center justify-start w-full">
             <motion.h1 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -218,10 +218,10 @@ const MonteDaRuina = () => {
             </motion.h1>
 
             {/* CONTÊINER DE COLUNAS: 
-                flex-col (stack) em telas menores, lg:flex-row (side-by-side) em telas grandes.
+                flex-col (stack) em telas menores, md:flex-row (side-by-side) em telas médias (responsividade).
                 Adiciona padding horizontal responsivo (px-4) para respeitar as bordas da tela.
             */}
-            <div className="flex flex-col lg:flex-row w-full max-w-6xl gap-8 mx-auto px-4 pb-6">
+            <div className="flex flex-col md:flex-row w-full max-w-6xl gap-8 mx-auto px-4 pb-6">
                 
                 {/* ===== PAINEL DE JOGO E APOSTA (Esquerda) ===== */}
                 <Card className="flex-1 p-8">
@@ -230,12 +230,12 @@ const MonteDaRuina = () => {
                             <HandCoins className="w-5 h-5 mr-2 text-amber-400"/> Rodada {round} | Saldo: R$ {balance.toFixed(2)}
                         </h2>
                         
-                        {/* NOVO: Bloco de Depósito Livre */}
+                        {/* REINTRODUÇÃO DO BLOCO DE DEPÓSITO DA IMAGEM */}
                         <div className="mb-4 p-4 border-4 border-dashed border-stone-700 rounded-lg bg-stone-700/30"> 
                             <h4 className="text-lg font-bold mb-3 flex items-center text-amber-400">
                                 <PlusCircle className="w-5 h-5 mr-2"/> Depósito Rápido (Apenas Inteiros):
                             </h4>
-                            <div className="flex gap-3 items-center">
+                            <div className="flex gap-2 items-center">
                                 <span className="text-xl font-bold text-gray-400">R$</span>
                                 <input
                                     type="number"
@@ -247,7 +247,7 @@ const MonteDaRuina = () => {
                                     }}
                                     min="1"
                                     step="1" // Garante que as setas avancem em números inteiros
-                                    className="flex-1 p-2 rounded bg-stone-700 text-white border border-gray-600 text-center font-bold appearance-none"
+                                    className="w-24 p-2 rounded bg-stone-700 text-white border border-gray-600 text-center"
                                 />
                                 <Button onClick={handleDeposit} variant="primary" className="bg-amber-600 hover:bg-amber-500">
                                     Depositar
