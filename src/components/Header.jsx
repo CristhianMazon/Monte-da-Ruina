@@ -12,33 +12,60 @@ const Header = ({ currentView, setCurrentView }) => {
     ];
 
     return (
-        <header className="w-full bg-black/20 border-b border-[#FBBF24]/30 px-6 py-4 mb-6 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <header className="w-full bg-black/30 border-b-2 border-[#FBBF24]/40 px-6 py-4 mb-8 backdrop-blur-md shadow-2xl relative z-50">
+            {/* CSS para esconder barra de rolagem nativa */}
+            <style>{`
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;  /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
+                }
+            `}</style>
+
+            <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                 
-                {/* Navigation Tabs */}
-                <nav className="flex gap-4 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 justify-center md:justify-start">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setCurrentView(tab.id)}
-                            className={`px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider transition-all whitespace-nowrap border
-                                ${currentView === tab.id 
-                                    ? 'bg-[#FBBF24]/20 text-[#FBBF24] border-[#FBBF24]' 
-                                    : 'text-gray-300 hover:text-white border-transparent hover:border-white/20'
-                                }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                {/* CORREÇÃO AQUI: 
+                   1. Adicionei 'p-4' (padding) para o brilho não ser cortado.
+                   2. Adicionei a classe 'no-scrollbar' para sumir com as barras.
+                */}
+                <nav className="flex gap-3 overflow-x-auto w-full md:w-auto p-4 justify-center md:justify-start no-scrollbar">
+                    {tabs.map(tab => {
+                        const isActive = currentView === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setCurrentView(tab.id)}
+                                className={`
+                                    px-6 py-2 rounded-full text-base font-extrabold uppercase tracking-widest transition-all duration-300 whitespace-nowrap border-2
+                                    ${isActive 
+                                        ? 'bg-[#FBBF24] text-[#580011] border-[#FBBF24] shadow-[0_0_20px_rgba(251,191,36,0.5)] scale-105' 
+                                        : 'bg-transparent text-[#FBBF24] border-transparent hover:border-[#FBBF24]/50 hover:bg-[#FBBF24]/10'
+                                    }
+                                `}
+                            >
+                                {tab.label}
+                            </button>
+                        );
+                    })}
                 </nav>
 
                 {/* Balance & Profile */}
-                <div className="flex items-center gap-4 ml-auto">
-                    <div className="text-[#FBBF24] font-bold text-lg tracking-wider font-serif">
-                        Saldo: R$ {balance.toFixed(2)}
+                <div className="flex items-center gap-5 ml-auto bg-black/40 px-5 py-2 rounded-full border-2 border-[#FBBF24]/30 flex-shrink-0">
+                    <div className="text-right">
+                        <div className="text-[#FBBF24]/80 text-[10px] font-bold uppercase tracking-widest mb-0.5">Saldo Atual</div>
+                        <div className="text-[#FBBF24] font-black text-2xl tracking-wide font-serif leading-none drop-shadow-md">
+                            R$ {balance.toFixed(2)}
+                        </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-stone-800 border-2 border-[#FBBF24] flex items-center justify-center shadow-lg overflow-hidden">
-                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Cristhian&backgroundColor=b6e3f4`} alt="User" className="w-full h-full" />
+                    
+                    <div className="w-12 h-12 rounded-full bg-[#1a0f0a] border-2 border-[#FBBF24] flex items-center justify-center shadow-[0_0_10px_rgba(251,191,36,0.2)] overflow-hidden relative group cursor-pointer">
+                         <img 
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Cristhian&backgroundColor=b6e3f4`} 
+                            alt="User" 
+                            className="w-full h-full transform group-hover:scale-110 transition-transform duration-300" 
+                        />
                     </div>
                 </div>
             </div>
