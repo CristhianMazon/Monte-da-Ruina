@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
+// IMPORTANTE: Importar o useAuth para saber QUEM está jogando
+import { useAuth } from "./AuthContext";
 
 const GameContext = createContext(null);
 export const useGame = () => useContext(GameContext);
@@ -9,7 +11,7 @@ export const BET_AMOUNT = 10;
 export const RISK_CARDS = [
     { id: '1', name: 'Bronze', multiplier: 1.5, winChance: 0.40, color: '#cd7f32', theme: 'Risco Baixo' }, 
     { id: '2', name: 'Prata', multiplier: 3, winChance: 0.20, color: '#c0c0c0', theme: 'Risco Médio' }, 
-    { id: '3', name: 'Ouro', multiplier: 10, winChance: 0.05, color: '#FFD700', theme: 'Risco Alto' }, 
+    { id: '3', name: 'Ouro', multiplier: 10, winChance: 0.05, color: '#FBBF24', theme: 'Risco Alto' }, 
 ];
 
 export const VISUAL_POSITIONS = [
@@ -25,12 +27,46 @@ export const calculateExpectedValue = (card) => {
 };
 
 export const GameProvider = ({ children }) => {
+    // Pegamos o usuário logado para criar o "cofre" dele
+    const { user } = useAuth();
+    
     const [balance, setBalance] = useState(INITIAL_BALANCE);
-    // CORRIGIDO AQUI (removido o "ZS")
-    const [bets, setBets] = useState([{ round: 0, balance: INITIAL_BALANCE }]); 
+    const [bets, setBets] = useState([]);
     const [ruinCount, setRuinCount] = useState(0);
     const [round, setRound] = useState(1);
     const [winStreak, setWinStreak] = useState(0);
+
+    // --- EFEITO 1: CARREGAR SALDO QUANDO O USUÁRIO MUDA (LOGIN) ---
+    useEffect(() => {
+        if (user && user.name) {
+            // Cria uma chave única para esse usuário: ex "monte_ruina_balance_Cristhian"
+            const userKey = `monte_ruina_balance_${user.name}`;
+            const savedBalance = localStorage.getItem(userKey);
+
+            if (savedBalance) {
+                // Se ele já jogou, carrega o saldo dele
+                const val = parseFloat(savedBalance);
+                setBalance(val);
+                // Reinicia o histórico visual para não misturar com o do jogador anterior
+                setBets([{ round: 0, balance: val }]); 
+            } else {
+                // Se é um jogador novo, começa com 100tão
+                setBalance(INITIAL_BALANCE);
+                setBets([{ round: 0, balance: INITIAL_BALANCE }]);
+            }
+            // Resetar estados da rodada ao trocar de usuário
+            setRound(1);
+            setWinStreak(0);
+        }
+    }, [user]); // Roda sempre que o 'user' mudar (login/logout)
+
+    // --- EFEITO 2: SALVAR SALDO AUTOMATICAMENTE ---
+    useEffect(() => {
+        if (user && user.name) {
+            const userKey = `monte_ruina_balance_${user.name}`;
+            localStorage.setItem(userKey, balance);
+        }
+    }, [balance, user]);
 
     const processBet = useCallback((betAmount, cardId) => {
         const card = RISK_CARDS.find(c => c.id === cardId);
@@ -39,13 +75,12 @@ export const GameProvider = ({ children }) => {
         const isWin = Math.random() < card.winChance;
         let newBalance = balance;
         let payout = 0;
-        let result = 'LOSS';
+        
         let newWinStreak = 0;
 
         if (isWin) {
             payout = betAmount * (card.multiplier - 1);
             newBalance += payout;
-            result = 'WIN';
             newWinStreak = winStreak + 1;
         } else {
             newBalance -= betAmount;
@@ -64,6 +99,7 @@ export const GameProvider = ({ children }) => {
     }, [balance, winStreak]);
 
     const resetGame = () => {
+        // Reseta apenas o jogo ATUAL, voltando o saldo para 100
         setBalance(INITIAL_BALANCE);
         setBets([{ round: 0, balance: INITIAL_BALANCE }]);
         setRound(1);
@@ -76,7 +112,7 @@ export const GameProvider = ({ children }) => {
         if (integerAmount > 0) {
             setBalance(prev => prev + integerAmount);
             setBets(prev => {
-                const lastBet = prev[prev.length - 1];
+                const lastBet = prev[prev.length - 1] || { balance: 0, round: 0 };
                 return [...prev.slice(0, -1), { ...lastBet, balance: lastBet.balance + integerAmount }];
             });
         }
@@ -86,7 +122,7 @@ export const GameProvider = ({ children }) => {
         if (amount > 0 && balance >= amount) {
             setBalance(prev => prev - amount);
             setBets(prev => {
-                const lastBet = prev[prev.length - 1];
+                const lastBet = prev[prev.length - 1] || { balance: 0, round: 0 };
                 return [...prev.slice(0, -1), { ...lastBet, balance: lastBet.balance - amount }];
             });
             return true;
