@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GameProvider } from './context/GameContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
-import FooterAds from './components/FooterAds'; // <--- IMPORTE AQUI
+import FooterAds from './components/FooterAds';
 import GameScreen from './views/GameScreen';
 import StatsScreen from './views/StatsScreen';
 import SupportScreen from './views/SupportScreen';
@@ -14,7 +14,12 @@ const MainApp = () => {
     const [currentView, setCurrentView] = useState('game');
 
     if (!user) {
-        return <LoginScreen />;
+        // Também aplica o zoom na tela de login para ficar padrão
+        return (
+            <div style={{ zoom: '0.8' }} className="w-full h-full">
+                <LoginScreen />
+            </div>
+        );
     }
 
     const renderView = () => {
@@ -29,17 +34,21 @@ const MainApp = () => {
 
     return (
         <GameProvider>
-            {/* Adicionei 'relative' e 'overflow-hidden' para garantir que nada vaze */}
-            <div className="min-h-screen bg-[#580011] text-gray-100 font-serif font-bold selection:bg-[#FBBF24] selection:text-[#580011] flex flex-col relative overflow-x-hidden">
+            {/* MUDANÇA AQUI: Adicionei style={{ zoom: '0.8' }} 
+                Isso aplica 80% de escala em TUDO (Header, Jogo, Rodapé),
+                simulando o "Ctrl -" do navegador para caber perfeitamente em 1080p.
+            */}
+            <div 
+                style={{ zoom: '0.8' }} 
+                className="min-h-screen bg-[#580011] text-gray-100 font-serif font-bold selection:bg-[#FBBF24] selection:text-[#580011] flex flex-col relative overflow-x-hidden"
+            >
                 
                 <Header currentView={currentView} setCurrentView={setCurrentView} />
                 
-                {/* Adicionei 'pb-32' (padding-bottom) para o conteúdo não ficar escondido atrás do banner */}
                 <main className="container mx-auto px-4 pb-32 flex justify-center w-full flex-1">
                      {renderView()}
                 </main>
 
-                {/* O BANNER ENTRA AQUI NO FINAL */}
                 <FooterAds />
             </div>
         </GameProvider>
