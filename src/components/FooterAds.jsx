@@ -43,7 +43,7 @@ const FAKE_ADS = [
     // --- AS NOVAS (15) ---
     {
         id: 6,
-        text: "💋 MÃES SOLTEIRAS EM [SEU BAIRRO] QUEREM CONHECER VOCÊ AGORA!",
+        text: "💋 MÃES SOLTEIRAS EM SEU BAIRRO QUEREM CONHECER VOCÊ AGORA!",
         subtext: "Elas odeiam joguinhos... mas adoram quem ganha no Monte da Ruína! Clique aqui.",
         bg: "bg-gradient-to-r from-pink-900 to-pink-600",
         border: "border-pink-400"
