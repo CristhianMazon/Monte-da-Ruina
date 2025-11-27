@@ -32,7 +32,7 @@ Diferente de um jogo justo, o Monte da Ruína opera com **EV (Valor Esperado) Ne
 
 | Nível | Multiplicador | Chance de Vitória | EV (House Edge) |
 | :--- | :---: | :---: | :---: |
-| 🥉 **Bronze** | **1.5x** | 40% | -0.40 |
+| 🥉 **Bronze** | **2.0x** | 45% | -0.40 |
 | 🥈 **Prata** | **3.0x** | 20% | -0.40 |
 | 🥇 **Ouro** | **10.0x** | 5% | -0.50 |
 
