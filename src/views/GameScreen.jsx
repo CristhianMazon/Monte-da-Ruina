@@ -3,7 +3,7 @@ import { useGame, RISK_CARDS, VISUAL_POSITIONS, BET_AMOUNT } from "../context/Ga
 import { useAuth } from "../context/AuthContext"; 
 import CardMonte from "../components/CardMonte";
 import VictoryEffect from "../components/VictoryEffect";
-import { Flame, Star, Skull, LogOut } from "lucide-react"; // Removi ArrowRight
+import { Flame, Star, Skull, LogOut, ArrowRight } from "lucide-react";
 
 const GameScreen = ({ navigateTo }) => {
     const { balance, simulateRound, commitRound, winStreak } = useGame();
@@ -89,9 +89,11 @@ const GameScreen = ({ navigateTo }) => {
         setIsProcessing(true);
         setMessage("");
 
+        // 1. Simula o resultado (Matemática)
         const result = simulateRound(currentBetAmount, selectedRiskId); 
 
         setTimeout(() => {
+            // 2. Define posição visual
             let valetePos;
             if (result.isWin) {
                 valetePos = selectedPositionId; 
@@ -102,38 +104,44 @@ const GameScreen = ({ navigateTo }) => {
 
             setValetePositionId(valetePos);
             
+            // 3. Revela, Toca Som e Atualiza Saldo
             setTimeout(() => {
                 setIsRevealed(true); 
                 setIsProcessing(false); 
                 
-                commitRound(result);
+                commitRound(result); // Atualiza o dinheiro agora
+
+                const basePath = import.meta.env.BASE_URL; // Garante o caminho do som
 
                 if (result.isWin) {
-                    const audio = new Audio('/sounds/win.mp3');
+                    const audio = new Audio(`${basePath}sounds/win.mp3`);
                     audio.volume = 0.4;
                     audio.play().catch(e => console.log("Erro som:", e));
+                    
                     setMessage(`VITORIA! +R$${result.payout.toFixed(2)}`);
                 } else {
-                    const audio = new Audio('/sounds/loss.mp3');
+                    const audio = new Audio(`${basePath}sounds/loss.mp3`);
                     audio.volume = 0.5;
                     audio.play().catch(e => console.log("Erro som:", e));
+                    
                     setMessage("DERROTA");
                 }
             }, 600);
         }, 500);
     };
 
-    const betControlBtnStyle = "bg-[#3E2723] hover:bg-[#4E3733] text-[#FBBF24] font-extrabold py-3 px-4 rounded-full border-2 border-[#FBBF24] shadow-md transition-all active:scale-95 text-lg";
-    const betControlMfBtnStyle = "bg-[#3E2723] hover:bg-[#4E3733] text-[#FBBF24]/80 font-extrabold py-3 px-4 rounded-full border-2 border-[#FBBF24]/50 shadow-md transition-all active:scale-95 text-lg";
+    // Estilos Visuais (Versão Grande/Luxo)
+    const betControlBtnStyle = "bg-[#3E2723] hover:bg-[#4E3733] text-[#FBBF24] font-extrabold py-3 px-4 rounded-full border-2 border-[#FBBF24] shadow-md transition-all active:scale-95 text-xl";
+    const betControlMfBtnStyle = "bg-[#3E2723] hover:bg-[#4E3733] text-[#FBBF24]/80 font-extrabold py-3 px-4 rounded-full border-2 border-[#FBBF24]/50 shadow-md transition-all active:scale-95 text-xl";
 
     return (
         <div className="flex flex-col lg:flex-row w-full h-full min-h-[750px] justify-between items-start px-8 gap-4 pb-10 relative">
             
             {showVictory && <VictoryEffect />}
 
-            {/* --- MODAL DE FALÊNCIA (PÉ NA COVA) --- */}
+            {/* --- MODAL DE FALÊNCIA (Z-Index 10000) --- */}
             {showBankruptcyModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
                     <div className="bg-[#2a0a0a] border-4 border-red-900 p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_100px_rgba(220,38,38,0.3)] transform scale-100 animate-in zoom-in-95 duration-500">
                         
                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-900 p-6 rounded-full border-4 border-[#2a0a0a] shadow-xl">
@@ -153,10 +161,9 @@ const GameScreen = ({ navigateTo }) => {
                         </p>
 
                         <div className="flex flex-col gap-4">
-                            {/* BOTÃO CORRIGIDO: Sem seta e perfeitamente centralizado */}
                             <button 
                                 onClick={() => navigateTo('wallet')}
-                                className="w-full py-4 bg-[#FBBF24] hover:bg-[#d9a520] text-[#580011] font-black text-2xl rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.4)] uppercase tracking-widest transition-transform hover:scale-105 active:scale-95 flex items-center justify-center"
+                                className="w-full py-4 bg-[#FBBF24] hover:bg-[#d9a520] text-[#580011] font-black text-2xl rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.4)] uppercase tracking-widest transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
                             >
                                 Ressuscitar (Depositar)
                             </button>
@@ -172,9 +179,9 @@ const GameScreen = ({ navigateTo }) => {
                 </div>
             )}
 
-            {/* --- MODAL DA GANÂNCIA (Overlay) --- */}
+            {/* --- MODAL DA GANÂNCIA (Z-Index 10000) --- */}
             {showGreedModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-[#580011] border-4 border-[#FBBF24] p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_100px_rgba(251,191,36,0.4)] transform scale-100 animate-in zoom-in-95 duration-300">
                         
                         <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#FBBF24] p-4 rounded-full border-4 border-[#580011]">
@@ -213,7 +220,7 @@ const GameScreen = ({ navigateTo }) => {
                 </div>
             )}
 
-            {/* ESQUERDA: SELEÇÃO DE RISCO */}
+            {/* ESQUERDA: SELEÇÃO DE RISCO (W-64 / Grande) */}
             <div className="w-full lg:w-64 flex flex-col justify-between border-2 border-[#FBBF24] p-5 rounded-3xl bg-black/20 shadow-2xl mt-4 relative z-10 h-[600px]">
                 {RISK_CARDS.map((card) => {
                     const isSelected = selectedRiskId === card.id;
@@ -239,7 +246,7 @@ const GameScreen = ({ navigateTo }) => {
                             <Star className="absolute bottom-2 left-2 w-4 h-4 text-black/40 fill-black/20" />
                             <Star className="absolute bottom-2 right-2 w-4 h-4 text-black/40 fill-black/20" />
 
-                            <span className="font-extrabold text-xl mb-1 drop-shadow-md tracking-wide">{card.name}</span>
+                            <span className="font-extrabold text-2xl mb-1 drop-shadow-md tracking-wide">{card.name}</span>
                             <span className="font-black text-5xl drop-shadow-lg">{card.multiplier}x</span>
                         </button>
                     );
@@ -255,7 +262,7 @@ const GameScreen = ({ navigateTo }) => {
                     </h1>
                 </div>
 
-                <div className="flex justify-center gap-16 w-full px-4 mb-8">
+                <div className="flex justify-center gap-12 w-full px-4 mb-8">
                      {VISUAL_POSITIONS.map((pos) => (
                         <CardMonte
                             key={pos.id}
@@ -299,7 +306,7 @@ const GameScreen = ({ navigateTo }) => {
                 </div>
             </div>
 
-            {/* DIREITA: CONTROLES DE APOSTA */}
+            {/* DIREITA: CONTROLES DE APOSTA (W-64 / Grande) */}
             <div className="w-full lg:w-64 flex flex-col justify-between items-center border-2 border-[#FBBF24] p-6 rounded-3xl bg-[#580011] shadow-2xl mt-4 relative z-10 h-[600px]">
                 
                 <div className="w-full flex flex-col gap-4">
