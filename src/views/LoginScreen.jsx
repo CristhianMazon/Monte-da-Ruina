@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User, ArrowRight } from 'lucide-react';
+import { Lock, User, ArrowRight, AlertTriangle } from 'lucide-react';
 
 const LoginScreen = () => {
     const { login } = useAuth();
@@ -10,16 +10,26 @@ const LoginScreen = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setError(""); // Limpa erros anteriores
+
         if (!name.trim() || !password.trim()) {
             setError("Preencha todos os campos, forasteiro.");
             return;
         }
-        login(name, password);
+
+        // Chama o login e espera o resultado
+        const result = login(name, password);
+
+        if (!result.success) {
+            // Se falhou (senha errada), mostra o erro na tela
+            setError(result.message);
+        } 
+        // Se sucesso, o AuthContext atualiza o 'user' e o App redireciona automaticamente
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#580011] px-4">
-            <div className="max-w-md w-full bg-black/30 border-4 border-[#FBBF24] p-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+            <div className="max-w-md w-full bg-black/30 border-4 border-[#FBBF24] p-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
                 
                 {/* Brilho de fundo */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FBBF24]/20 blur-[80px] pointer-events-none"></div>
@@ -63,10 +73,12 @@ const LoginScreen = () => {
                         </div>
                     </div>
 
+                    {/* Mensagem de Erro */}
                     {error && (
-                        <p className="text-red-400 text-center font-bold bg-red-900/20 p-2 rounded-lg border border-red-500/30 animate-pulse">
-                            {error}
-                        </p>
+                        <div className="flex items-center gap-3 text-red-300 bg-red-900/40 p-4 rounded-xl border border-red-500/50 animate-pulse">
+                            <AlertTriangle className="w-6 h-6 shrink-0" />
+                            <p className="font-bold text-sm leading-tight">{error}</p>
+                        </div>
                     )}
 
                     <button 

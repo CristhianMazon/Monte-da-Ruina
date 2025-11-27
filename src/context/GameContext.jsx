@@ -28,68 +28,86 @@ export const calculateExpectedValue = (card) => {
 export const GameProvider = ({ children }) => {
     const { user } = useAuth();
     
+    // Estados do Jogo
     const [balance, setBalance] = useState(INITIAL_BALANCE);
-    const [bets, setBets] = useState([]);
+    const [bets, setBets] = useState([{ round: 0, balance: INITIAL_BALANCE }]); 
     const [ruinCount, setRuinCount] = useState(0);
     const [round, setRound] = useState(1);
     const [winStreak, setWinStreak] = useState(0);
 
-    // Carregar saldo ao trocar de usuário
+    // TRAVA DE SEGURANÇA: Só permite salvar depois de carregar
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+    // --- 1. CARREGAR DADOS (Load) ---
     useEffect(() => {
         if (user && user.name) {
-            const userKey = `monte_ruina_balance_${user.name}`;
-            const savedBalance = localStorage.getItem(userKey);
+            // Bloqueia salvamento enquanto carrega
+            setIsDataLoaded(false); 
+            
+            const saveKey = `monte_ruina_gamestate_${user.name}`;
+            const savedDataString = localStorage.getItem(saveKey);
 
-            if (savedBalance) {
-                const val = parseFloat(savedBalance);
-                setBalance(val);
-                setBets([{ round: 0, balance: val }]); 
+            if (savedDataString) {
+                // Se achou save, carrega TUDO
+                const data = JSON.parse(savedDataString);
+                setBalance(data.balance);
+                // Garante que bets seja um array válido
+                setBets(Array.isArray(data.bets) && data.bets.length > 0 ? data.bets : [{ round: 0, balance: INITIAL_BALANCE }]);
+                setRuinCount(data.ruinCount || 0);
+                setRound(data.round || 1);
+                setWinStreak(data.winStreak || 0);
             } else {
+                // Se é usuário novo, reseta para o padrão
                 setBalance(INITIAL_BALANCE);
                 setBets([{ round: 0, balance: INITIAL_BALANCE }]);
+                setRuinCount(0);
+                setRound(1);
+                setWinStreak(0);
             }
-            setRound(1);
-            setWinStreak(0);
+            
+            // Libera o salvamento agora que os dados estão na memória
+            setIsDataLoaded(true); 
         }
-    }, [user]);
+    }, [user]); 
 
-    // Salvar saldo automaticamente
+    // --- 2. SALVAR DADOS (Save) ---
     useEffect(() => {
-        if (user && user.name) {
-            const userKey = `monte_ruina_balance_${user.name}`;
-            localStorage.setItem(userKey, balance);
+        // A MÁGICA: Só salva se o usuário existe E se os dados já foram carregados
+        if (user && user.name && isDataLoaded) {
+            const saveKey = `monte_ruina_gamestate_${user.name}`;
+            const gameState = {
+                balance,
+                bets,
+                ruinCount,
+                round,
+                winStreak
+            };
+            localStorage.setItem(saveKey, JSON.stringify(gameState));
         }
-    }, [balance, user]);
+    }, [balance, bets, ruinCount, round, winStreak, user, isDataLoaded]);
 
-    // --- NOVA LÓGICA: SEPARAR CÁLCULO DE ATUALIZAÇÃO ---
-
-    // 1. Apenas calcula o resultado (Matemática pura, sem mexer no saldo)
     const simulateRound = useCallback((betAmount, cardId) => {
         const card = RISK_CARDS.find(c => c.id === cardId);
         if (!card) return null;
-
         const isWin = Math.random() < card.winChance;
-        // Lucro puro (sem contar a aposta base, já que a lógica de dedução é separada)
         const payout = betAmount * (card.multiplier - 1); 
-
         return { isWin, card, payout, betAmount };
     }, []);
 
-    // 2. Aplica o resultado no saldo (Chamado só depois da animação)
     const commitRound = useCallback((result) => {
         setBalance(prevBalance => {
             let newBalance = prevBalance;
-            
             if (result.isWin) {
-                newBalance += result.payout; // Ganhou: Soma o lucro
+                newBalance += result.payout; 
             } else {
-                newBalance -= result.betAmount; // Perdeu: Subtrai a aposta
+                newBalance -= result.betAmount; 
             }
+            newBalance = Math.max(0, newBalance);
 
-            newBalance = Math.max(0, newBalance); // Nunca negativo
-
-            // Atualiza histórico dentro do callback para garantir sincronia
-            setBets(prevBets => [...prevBets, { round: prevBets.length, balance: newBalance }]);
+            setBets(prevBets => {
+                const nextRoundNum = prevBets.length; 
+                return [...prevBets, { round: nextRoundNum, balance: newBalance }];
+            });
             
             if (newBalance === 0) setRuinCount(prev => prev + 1);
 
@@ -104,7 +122,7 @@ export const GameProvider = ({ children }) => {
         setBalance(INITIAL_BALANCE);
         setBets([{ round: 0, balance: INITIAL_BALANCE }]);
         setRound(1);
-        setRuinCount(0);
+        setRuinCount(prev => prev + 1); 
         setWinStreak(0);
     };
 
@@ -114,7 +132,7 @@ export const GameProvider = ({ children }) => {
             setBalance(prev => prev + integerAmount);
             setBets(prev => {
                 const lastBet = prev[prev.length - 1] || { balance: 0, round: 0 };
-                return [...prev.slice(0, -1), { ...lastBet, balance: lastBet.balance + integerAmount }];
+                return [...prev, { round: prev.length, balance: lastBet.balance + integerAmount }];
             });
         }
     }, []);
@@ -124,7 +142,7 @@ export const GameProvider = ({ children }) => {
             setBalance(prev => prev - amount);
             setBets(prev => {
                 const lastBet = prev[prev.length - 1] || { balance: 0, round: 0 };
-                return [...prev.slice(0, -1), { ...lastBet, balance: lastBet.balance - amount }];
+                return [...prev, { round: prev.length, balance: lastBet.balance - amount }];
             });
             return true;
         }
@@ -139,8 +157,8 @@ export const GameProvider = ({ children }) => {
         winStreak,
         RISK_CARDS,
         VISUAL_POSITIONS,
-        simulateRound, // Nova função exportada
-        commitRound,   // Nova função exportada
+        simulateRound, 
+        commitRound,   
         resetGame,
         deposit,
         withdraw,
