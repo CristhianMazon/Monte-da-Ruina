@@ -39,7 +39,7 @@ const MainApp = () => {
                 simulando o "Ctrl -" do navegador para caber perfeitamente em 1080p.
             */}
             <div 
-                style={{ zoom: '0.8' }} 
+                style={{ zoom: '0.7' }} 
                 className="min-h-screen bg-[#580011] text-gray-100 font-serif font-bold selection:bg-[#FBBF24] selection:text-[#580011] flex flex-col relative overflow-x-hidden"
             >
                 
