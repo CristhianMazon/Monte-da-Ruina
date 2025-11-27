@@ -1,31 +1,29 @@
 import React, { useState } from 'react';
 import { GameProvider } from './context/GameContext';
-import { AuthProvider, useAuth } from './context/AuthContext'; // Importe o AuthProvider
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import GameScreen from './views/GameScreen';
 import StatsScreen from './views/StatsScreen';
 import SupportScreen from './views/SupportScreen';
 import WalletScreen from './views/WalletScreen';
-import LoginScreen from './views/LoginScreen'; // Importe a tela de Login
+import LoginScreen from './views/LoginScreen';
 
-// Componente interno que decide qual tela mostrar
 const MainApp = () => {
-    const { user } = useAuth(); // Pega o usuário do contexto
+    const { user } = useAuth();
     const [currentView, setCurrentView] = useState('game');
 
-    // Se não estiver logado, retorna a tela de Login
     if (!user) {
         return <LoginScreen />;
     }
 
-    // Se estiver logado, mostra o app normal
     const renderView = () => {
         switch(currentView) {
-            case 'game': return <GameScreen />;
+            // MUDANÇA AQUI: Passando 'navigateTo' para o GameScreen
+            case 'game': return <GameScreen navigateTo={setCurrentView} />;
             case 'stats': return <StatsScreen />;
             case 'support': return <SupportScreen />;
             case 'wallet': return <WalletScreen />;
-            default: return <GameScreen />;
+            default: return <GameScreen navigateTo={setCurrentView} />;
         }
     }
 
@@ -41,7 +39,6 @@ const MainApp = () => {
     );
 };
 
-// Componente Raiz
 function App() {
   return (
     <AuthProvider>
