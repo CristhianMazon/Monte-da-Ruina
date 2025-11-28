@@ -5,29 +5,28 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContai
 const StatsScreen = () => {
     const { bets } = useGame();
 
-    // --- LÓGICA DO GRADIENTE DO GRÁFICO (CORRIGIDA) ---
-    const dataMax = Math.max(...bets.map((i) => i.balance));
-    const dataMin = Math.min(...bets.map((i) => i.balance));
+    // Prepara os dados: Calcula o LUCRO (Saldo - Investido) para cada ponto
+    const chartData = bets.map(b => ({
+        ...b,
+        profit: b.balance - (b.invested || 100) // Fallback para 100 se for dado antigo
+    }));
+
+    const dataMax = Math.max(...chartData.map((i) => i.profit));
+    const dataMin = Math.min(...chartData.map((i) => i.profit));
 
     const gradientOffset = () => {
-        // Se o valor máximo for menor ou igual a 100 (só perdeu), tudo vermelho
-        if (dataMax <= 100) return 0; 
-        // Se o valor mínimo for maior ou igual a 100 (só ganhou), tudo verde
-        if (dataMin >= 100) return 1; 
-        // CORREÇÃO: Se Max for igual a Min (ex: inicio do jogo), retorna 0 pra não dar erro de divisão por zero
-        if (dataMax === dataMin) return 0;
-
-        return (dataMax - 100) / (dataMax - dataMin);
+        if (dataMax <= 0) return 0; // Só prejuízo -> Vermelho
+        if (dataMin >= 0) return 1; // Só lucro -> Verde
+        return dataMax / (dataMax - dataMin); // Ponto de virada no Zero
     };
 
     const off = gradientOffset();
-    // ----------------------------------------
 
     return (
         <div className="w-full max-w-[1400px] flex flex-col items-center gap-8">
             
             <h2 className="text-5xl font-extrabold text-[#FBBF24] font-serif border-b-4 border-[#FBBF24] pb-2 px-10 tracking-wider drop-shadow-lg">
-                Estatísticas de jogador
+                Performance do Jogador
             </h2>
 
             <div className="flex flex-col lg:flex-row gap-8 w-full items-stretch justify-center h-[600px]">
@@ -60,48 +59,53 @@ const StatsScreen = () => {
                     </div>
                     <div className="absolute bottom-6 left-0 right-0 text-center px-6">
                         <p className="text-[#FBBF24]/60 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                            EV (Valor Esperado) negativo comprova<br/>a inevitabilidade da Ruína.
+                            Gráfico baseado em Lucro Líquido.<br/>Depósitos não contam como vitória.
                         </p>
                     </div>
                 </div>
 
-                {/* 2. GRÁFICO CORRIGIDO */}
+                {/* 2. GRÁFICO DE LUCRO/PREJUÍZO */}
                 <div className="flex-1 border-4 border-[#FBBF24] rounded-[3rem] p-6 bg-[#2A1D18] shadow-2xl flex flex-col relative overflow-hidden">
                     <div className="w-full h-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={bets} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#FBBF24" strokeOpacity={0.2} vertical={false} />
                                 <XAxis dataKey="round" hide />
                                 <YAxis 
                                     domain={['auto', 'auto']} 
                                     stroke="#FBBF24" 
                                     tick={{fill: '#FBBF24', fontSize: 14, fontWeight: 800, fontFamily: 'Abhaya Libre'}} 
-                                    tickFormatter={(val) => val.toFixed(0)}
-                                    width={40}
+                                    tickFormatter={(val) => `R$ ${val}`}
+                                    width={60}
                                 />
                                 <Tooltip 
                                     contentStyle={{ backgroundColor: '#2a0a0a', border: '2px solid #FBBF24', borderRadius: '10px' }}
                                     itemStyle={{ color: '#FBBF24', fontWeight: 'bold', fontFamily: 'Abhaya Libre' }}
                                     labelStyle={{ display: 'none'}}
-                                    formatter={(value) => [`R$ ${value.toFixed(2)}`, 'Saldo']}
+                                    formatter={(value) => [
+                                        <span style={{ color: value >= 0 ? '#4ade80' : '#ef4444' }}>
+                                            R$ {value.toFixed(2)}
+                                        </span>, 
+                                        value >= 0 ? 'Lucro' : 'Prejuízo'
+                                    ]}
                                 />
                                 
                                 <defs>
-                                    <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="splitColorProfit" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset={off} stopColor="#4ade80" stopOpacity={1} /> 
                                         <stop offset={off} stopColor="#ef4444" stopOpacity={1} /> 
                                     </linearGradient>
                                 </defs>
 
-                                <ReferenceLine y={100} stroke="#FBBF24" strokeDasharray="5 5" strokeOpacity={0.5} />
+                                {/* Linha Zero (Referência de Break-even) */}
+                                <ReferenceLine y={0} stroke="#FBBF24" strokeDasharray="5 5" strokeOpacity={0.8} strokeWidth={2} />
 
                                 <Line 
                                     type="monotone" 
-                                    dataKey="balance" 
-                                    stroke="url(#splitColor)" 
+                                    dataKey="profit" // Usa o lucro calculado
+                                    stroke="url(#splitColorProfit)" 
                                     strokeWidth={4}
                                     dot={{ r: 0 }}
-                                    // Bolinha só aparece se tiver mais de 1 ponto ou se for o inicio
                                     activeDot={{ r: 8, fill: '#3AFF7A', stroke: '#fff', strokeWidth: 2 }} 
                                     animationDuration={500}
                                 />
@@ -110,11 +114,11 @@ const StatsScreen = () => {
                     </div>
                 </div>
 
-                {/* 3. HISTÓRICO */}
+                {/* 3. HISTÓRICO (Mantém Saldo Real) */}
                 <div className="w-full lg:w-1/4 border-4 border-[#FBBF24] rounded-[3rem] bg-black/20 shadow-2xl flex flex-col overflow-hidden">
                     <div className="p-6 border-b-2 border-[#FBBF24]/30">
                         <h4 className="text-[#FBBF24] text-center font-extrabold text-2xl font-serif underline decoration-2 underline-offset-8 decoration-[#FBBF24]/50">
-                            Histórico de Partidas
+                            Histórico de Saldo
                         </h4>
                     </div>
                     
@@ -127,6 +131,7 @@ const StatsScreen = () => {
 
                         {[...bets].reverse().filter(b => b.round > 0).map((bet, i) => {
                              const prev = bets[bets.length - 1 - i - 1] || {balance: 100}; 
+                             // Aqui comparamos SALDO para ver se subiu ou desceu
                              const win = bet.balance >= prev.balance;
                              
                              return (
