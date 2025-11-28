@@ -9,7 +9,7 @@ const HANDCRAFTED_ADS = [
     { id: 2, text: "🐴 VENDE-SE CAVALO CEGO. ÓTIMO PARA LASANHA.", subtext: "Tratar com o Açougueiro da esquina (não faça perguntas).", bg: "bg-gradient-to-r from-red-900 to-red-600", border: "border-red-400" },
     { id: 3, text: "🍺 PROMOÇÃO NO SALOON: PAGUE 1 E LEVE UM TIRO DE GRAÇA!", subtext: "Oferta válida apenas para forasteiros que olharem torto.", bg: "bg-gradient-to-r from-amber-900 to-amber-600", border: "border-amber-400" },
     { id: 4, text: "🔮 CARTOMANTE MADAME ZORA: PREVEJO QUE VOCÊ VAI PERDER TUDO HOJE!", subtext: "Consultas a partir de R$ 5,00. Traga seu desespero.", bg: "bg-gradient-to-r from-purple-900 to-purple-600", border: "border-purple-400" },
-    { id: 6, text: "💋 MÃES SOLTEIRAS EM [SEU BAIRRO] QUEREM CONHECER VOCÊ AGORA!", subtext: "Elas odeiam joguinhos... mas adoram quem ganha no Monte da Ruína!", bg: "bg-gradient-to-r from-pink-900 to-pink-600", border: "border-pink-400" },
+    { id: 6, text: "💋 MÃES SOLTEIRAS EM SEU BAIRRO QUEREM CONHECER VOCÊ AGORA!", subtext: "Elas odeiam joguinhos... mas adoram quem ganha no Monte da Ruína!", bg: "bg-gradient-to-r from-pink-900 to-pink-600", border: "border-pink-400" },
 
     // SERVIÇOS EXTREMAMENTE DUVIDOSOS
     { text: "🧨 LIMPEZA DE CHAMINÉ COM DINAMITE.", subtext: "Rápido, eficaz e você nunca mais vai precisar limpar (porque não terá chaminé)." },
