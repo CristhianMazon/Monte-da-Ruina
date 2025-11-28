@@ -160,7 +160,7 @@ const FooterAds = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             // MUDANÇA: 50% DE CHANCE (Math.random() > 0.5)
-            if (Math.random() > 0.5) { 
+            if (Math.random() > 0.7) { 
                 const randomIndex = Math.floor(Math.random() * HANDCRAFTED_ADS.length);
                 setCurrentAd(HANDCRAFTED_ADS[randomIndex]);
             } else {
