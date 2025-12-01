@@ -39,7 +39,8 @@ const MainApp = () => {
             >
                 <Header currentView={currentView} setCurrentView={setCurrentView} />
                 
-                <main className="container mx-auto px-4 pb-32 flex justify-center w-full flex-1">
+                {/* Alteração: Adicionado 'items-center' para centralizar verticalmente */}
+                <main className="container mx-auto px-4 pb-32 flex justify-center w-full flex-1 items-center">
                      {renderView()}
                 </main>
 
